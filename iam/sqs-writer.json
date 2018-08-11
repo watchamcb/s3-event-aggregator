@@ -4,7 +4,7 @@
         {
             "Effect": "Allow",
             "Action": "sqs:SendMessage",
-            "Resource": "arn:aws:sqs:REGION:ACCOUNT:S3EventAggregatorActionQueue"
+            "Resource": "arn:aws:sqs:REGION:ACCOUNT_ID:S3EventAggregatorActionQueue"
         }
     ]
 }
