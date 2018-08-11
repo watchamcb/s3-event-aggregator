@@ -1,0 +1,13 @@
+{
+    "LambdaFunctionConfigurations": [
+        {
+            "Id": "s3-event-aggregator",
+            "LambdaFunctionArn": "arn:aws:lambda:REGION:ACCOUNT_ID:function:S3EventAggregator",
+            "Events": [
+                "s3:ObjectCreated:*",
+                "s3:ObjectRemoved:*"
+            ]
+        }
+    ]
+}
+
