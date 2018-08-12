@@ -1,0 +1,14 @@
+o{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "sqs:DeleteMessage",
+                "sqs:GetQueueAttributes",
+                "sqs:ReceiveMessage"
+            ],
+            "Resource": "arn:aws:sqs:REGION:ACCOUNT_ID:S3EventAggregatorActionQueue"
+        }
+    ]
+}

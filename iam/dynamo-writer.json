@@ -7,7 +7,7 @@
 		    "dynamodb:UpdateItem",
 		    "dynamodb:GetItem"
 	    ],
-            "Resource": "arn:aws:dynamodb:REGION:ACCOUNT_ID:table/S3EventAggregator"
+            "Resource": "arn:aws:dynamodb:eu-west-1:312897289399:table/S3EventAggregator"
         }
     ]
 }
