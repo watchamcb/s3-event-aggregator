@@ -6,7 +6,8 @@
             "Action": [
                 "storagegateway:RefreshCache",
                 "storagegateway:ListFileShares",
-                "storagegateway:DescribeNFSFileShares"
+                "storagegateway:DescribeNFSFileShares",
+                "storagegateway:DescribeSMBFileShares"
             ],
             "Resource": "*"
         }
