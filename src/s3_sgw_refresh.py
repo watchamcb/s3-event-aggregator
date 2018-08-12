@@ -1,12 +1,18 @@
 import sys
+import os
 import boto3
 import botocore
+import logging
 
 sgw = boto3.client('storagegateway')
 dynamodb = boto3.client('dynamodb')
+log = logging.getLogger('S3StorageGatewayRefresh')
+log.setLevel(os.environ['LOG_LEVEL'])
 
 def find_share(bucket):
+    log.debug('Searching for file share gateway for bucket %s', bucket)
     share_list = sgw.list_file_shares()
+    log.debug('list_file_shares: %s', share_list)
     nfs_share_arns = []
     smb_share_arns = []
     for share in share_list['FileShareInfoList']:
@@ -37,12 +43,13 @@ def find_share(bucket):
                     return smb['FileShareARN']
     except botocore.exceptions.ClientError as e:
         if (e.response['Error']['Code'] == 'InvalidGatewayRequestException'):
-            print('Error looking up NFS file shares,', 
+            log.error('Error looking up NFS file shares,', 
                     'probably an SMB share with wrong execution environment')
     return ''
 
 
 def cache_share(bucket, share):
+    log.debug('Caching bucket %s file share ARN: %s', bucket, share)
     dynamodb.update_item(TableName='S3EventAggregator', 
         Key={ 'BucketName' : { 'S': bucket } },
         ExpressionAttributeNames={
@@ -62,32 +69,33 @@ def lookup_share(bucket):
     )
     if 'share' in response['Item']:
         share = response['Item']['share']['S']
+        log.debug('Cached share %s found for bucket %s', share, bucket)
         return share
     share = find_share(bucket)
     if len(share) > 0:
+        log.info('Found share %s for bucket %s', share, bucket)
         cache_share(bucket, share)
     return share
 
-def handle_exception(*logs):
-    exctype, value = sys.exc_info()[:2]
-    print(*logs, exctype, value)
-
 def lambda_handler(event, context):
     if 'Records' not in event:
-        print('Ignoring invalid event, missing Records element:', event)
+        log.warn('Ignoring invalid event, missing Records element: %s', event)
         return
     for message in event['Records']:
         try:
             if 'messageAttributes' not in message:
-                print('Ignoring invalid message, missing messageAttributes element:', message)
+                log.warn('Ignoring invalid message, missing messageAttributes'
+                    ' element: %s', message)
                 continue
             bucket = message['messageAttributes']['bucket-name']['stringValue']
             share = lookup_share(bucket)
             if len(share) > 0:
-                print('Refreshing share:', share)
+                log.info('Refreshing share %s for bucket %s', share, bucket)
                 sgw.refresh_cache(FileShareARN=share)
             else:
-                print('Could not find file share for bucket:', bucket, ', skipping refresh')
+                log.warn('Could not find file share, skipping refresh for '
+                    'bucket: %s', bucket)
         except:
-            handle_exception('Error proccessing message:', message, ' ignoring')
-        
+            exctype, value = sys.exc_info()[:2]
+            log.error('Error processing message %s %s, ignoring: %s', exctype, value, message)
+
