@@ -3,7 +3,10 @@
     "Statement": [
         {
             "Effect": "Allow",
-            "Action": "dynamodb:UpdateItem",
+            "Action": [
+		    "dynamodb:UpdateItem",
+		    "dynamodb:GetItem"
+	    ],
             "Resource": "arn:aws:dynamodb:REGION:ACCOUNT_ID:table/S3EventAggregator"
         }
     ]
