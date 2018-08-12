@@ -39,6 +39,7 @@ def find_share(bucket):
         if (e.response['Error']['Code'] == 'InvalidGatewayRequestException'):
             print('Error looking up NFS file shares,', 
                     'probably an SMB share with wrong execution environment')
+    return ''
 
 
 def cache_share(bucket, share):
@@ -63,7 +64,8 @@ def lookup_share(bucket):
         share = response['Item']['share']['S']
         return share
     share = find_share(bucket)
-    cache_share(bucket, share)
+    if len(share) > 0:
+        cache_share(bucket, share)
     return share
 
 def handle_exception(*logs):
@@ -87,5 +89,5 @@ def lambda_handler(event, context):
             else:
                 print('Could not find file share for bucket:', bucket, ', skipping refresh')
         except:
-            handle_exception('Error proccessing message:', message, ', ignoring')
+            handle_exception('Error proccessing message:', message, ' ignoring')
         
